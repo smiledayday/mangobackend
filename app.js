@@ -1,13 +1,16 @@
-var createError = require('http-errors')
-var express = require('express')
-var path = require('path')
-var cookieParser = require('cookie-parser')
-var logger = require('morgan')
+const createError = require('http-errors')
+const express = require('express')
+const path = require('path')
+const cookieParser = require('cookie-parser')
+const logger = require('morgan')
+const bodyParser = require('body-parser')
+const indexRouter = require('./routes/index')
+const usersRouter = require('./routes/users')
+const docsRouter = require('./routes/docs')
 
-var indexRouter = require('./routes/index')
-var usersRouter = require('./routes/users')
+const ALLOW_ORIGINS = ['http://localhost:3000']
 
-var app = express()
+const app = express()
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'))
@@ -19,8 +22,30 @@ app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 
+//post请求的中间件
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
+
+const cors = require('cors')
+const corsOption = {
+  origin: (origin, callback) => {
+    callback(undefined, ALLOW_ORIGINS)
+  },
+  credentials: true
+}
+app.use(cors(corsOption))
+
+// app.all('*', function (req, res, next) {
+//   res.header('Access-Control-Allow-Origin', 'http://localhost:3000')
+//   res.header('Access-Control-Allow-Methods', 'PUT,POST,GET,DELETE,OPTIONS')
+//   res.header('Content-Type', 'application/json;charset=utf-8')
+//   next()
+// })
+//cors跨域设置
+
 app.use('/', indexRouter)
 app.use('/users', usersRouter)
+app.use('/docs', docsRouter)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -38,20 +63,15 @@ app.use(function (err, req, res, next) {
   res.render('error')
 })
 
-var mysql = require('mysql')
-var connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: '12345678',
-  database: 'docs_db'
-})
-connection.connect()
-// connection.query('SELECT 1 + 1 AS solution', function (err, rows, fields) {
-//   if (err) throw err
-
-//   console.log('The solution is: ', rows[0].solution)
+// var mysql = require('mysql')
+// var connection = mysql.createConnection({
+//   host: 'localhost',
+//   user: 'root',
+//   password: '12345678',
+//   database: 'docs_db'
 // })
+// connection.connect()
+
 app.listen(8080)
 // connection.end()
-
 module.exports = app
