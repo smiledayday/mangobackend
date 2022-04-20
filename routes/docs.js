@@ -43,7 +43,6 @@ router.post('/save', (req, res) => {
       })
     }
   } catch (error) {
-    console.log(error)
     res.status(500).send(formatJson(5, null, '服务器错误'))
   }
 })
